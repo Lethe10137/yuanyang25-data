@@ -32,22 +32,21 @@ for (const puzzle of raw_puzzles){
     for(item of puzzle.content){
         contents.push(item[1]);
         if(item[0])
-            answers.push({serial: item[0], others: item[2]});
+            answers.push(item[0]);
     }
 
     const root = generateKey();
-    const key_chain = generateKeyChain(contents.length, root);
-    const expected_cipher_answer = [];
-
+    // const key_chain = generateKeyChain(contents.length, root);
+    const expected_cipher_answer = answers.map((answer) => CryptoJS.SHA256(answer).toString());
     const other_cipher_answer_response = [];
 
-    for(let i = 0; i < answers.length; i++){
-        expected_cipher_answer.push(CryptoJS.SHA256(key_chain[i] + answers[i].serial).toString());
-        Object.entries(answers[i].others).forEach(([answer, response]) => {
-            const other_cipher_answer = CryptoJS.SHA256(key_chain[i] + answer).toString();
-            other_cipher_answer_response.push([other_cipher_answer, response]);
-        });
-    }
+    Object.entries(puzzle.toast).forEach(([answer, response]) => {
+        other_cipher_answer_response.push([
+            CryptoJS.SHA256(answer).toString(), 
+            response
+        ]);
+    });
+
 
     const cipher_hints = [];
     for(item of puzzle.hints){
