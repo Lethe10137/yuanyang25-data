@@ -50,6 +50,11 @@ function generateKey(length = 64) {
     return result;
 }
 
+
+function updateKey(key, salt){
+    return CryptoJS.SHA256(key + salt).toString();
+}
+
 function generateKeyChain(length, root = generateKey()){
     const result = [];
     let a = CryptoJS.enc.Hex.parse(root);
@@ -85,6 +90,6 @@ function chainEncrypt(data_chain, root){
     return result;
 }
 
-module.exports = { encrypt, decrypt, generateKey, generateKeyChain, chainDecrypt, chainEncrypt};
+module.exports = { encrypt, decrypt, generateKey, generateKeyChain, chainDecrypt, chainEncrypt, updateKey};
 
 

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 定义文件路径
-const rawPuzzlesPath = path.resolve(__dirname, 'raw_puzzles.json');
+const rawPuzzlesPath = path.resolve(__dirname, './output/raw_puzzles.json');
 
 // 读取文件并解析为 JSON
 let rawPuzzles;

@@ -1,6 +1,6 @@
 
 const CryptoJS = require('./crypto-js.min.js');
-const {encrypt, decrypt, generateKey, chainEncrypt, chainDecrypt, generateKeyChain} = require('./mycipher.js');
+const {encrypt, decrypt, generateKey, chainEncrypt, chainDecrypt, generateKeyChain, updateKey} = require('./mycipher.js');
 const {raw_puzzles} = require('./raw_puzzles.js');
 
 const decipher_keys = new Map();
@@ -25,6 +25,7 @@ function make_chain_cipher(raw_data_chain, price, type, key = generateKey()){
 
 for (const puzzle of raw_puzzles){
 
+    next_cipher_id = 1 + puzzle.puzzle_id * 100;
 
     const contents = [];
     const answers = [];
@@ -35,7 +36,8 @@ for (const puzzle of raw_puzzles){
             answers.push(item[0]);
     }
 
-    const root = generateKey();
+    const root = puzzle.decipher_key[0];
+
     // const key_chain = generateKeyChain(contents.length, root);
     const expected_cipher_answer = answers.map((answer) => CryptoJS.SHA256(answer).toString());
     const other_cipher_answer_response = [];
@@ -49,8 +51,12 @@ for (const puzzle of raw_puzzles){
 
 
     const cipher_hints = [];
+    let hint_key = puzzle.decipher_key[1];
+    let i = 0;
     for(item of puzzle.hints){
-        cipher_hints.push({title: item.title, cipher: make_cipher(item.content, item.price, 1)})
+        hint_key = updateKey(hint_key, puzzle.decipher_key[2] + `${i++}`)
+        cipher_hints.push({title: item.title, cipher: make_cipher(item.content, item.price, 1, hint_key)})
+        
     }
 
     const backend_value = {
@@ -70,7 +76,7 @@ for (const puzzle of raw_puzzles){
         puzzle_id: puzzle.puzzle_id,
         title: puzzle.title,
         meta: puzzle.meta,
-        skip: make_cipher(puzzle.content[puzzle.content.length -1][0], unlock_base, 2 + meta),
+        skip: make_cipher(puzzle.content[puzzle.content.length -1][0], unlock_base, 2 + meta, puzzle.decipher_key[3]),
         content: make_chain_cipher(contents, puzzle.price, 0 + meta, root),
         hints: cipher_hints
     };
@@ -109,3 +115,9 @@ const fs = require('fs');
 fs.writeFileSync("output/frontend.json", JSON.stringify(frontend_data, null, 2));
 fs.writeFileSync("output/backend.json", JSON.stringify(backend_data, null, 2));
 fs.writeFileSync("output/cipher_key.json", JSON.stringify(Array.from(decipher_keys), null, 2));
+
+console.log("decipher_key:");
+
+for(item of Array.from(decipher_keys)){
+    console.log(item[0],'\t',JSON.stringify(item[1], space=0))
+}
