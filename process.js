@@ -50,14 +50,7 @@ for (const puzzle of raw_puzzles){
     });
 
 
-    const cipher_hints = [];
-    let hint_key = puzzle.decipher_key[1];
-    let i = 0;
-    for(item of puzzle.hints){
-        hint_key = updateKey(hint_key, puzzle.decipher_key[2] + `${i++}`)
-        cipher_hints.push({title: item.title, cipher: make_cipher(item.content, item.price, 1, hint_key)})
-        
-    }
+
 
     const backend_value = {
         puzzle_id: puzzle.puzzle_id,
@@ -76,10 +69,18 @@ for (const puzzle of raw_puzzles){
         puzzle_id: puzzle.puzzle_id,
         title: puzzle.title,
         meta: puzzle.meta,
-        skip: make_cipher(puzzle.content[puzzle.content.length -1][0], unlock_base, 2 + meta, puzzle.decipher_key[3]),
         content: make_chain_cipher(contents, puzzle.price, 0 + meta, root),
-        hints: cipher_hints
+        skip: make_cipher(puzzle.content[puzzle.content.length -1][0], unlock_base, 2 + meta, puzzle.decipher_key[3]),
+        hints: []
     };
+
+
+    let hint_key = puzzle.decipher_key[1];
+    let i = 0;
+    for(item of puzzle.hints){
+        hint_key = updateKey(hint_key, puzzle.decipher_key[2] + `${i++}`)
+        frontend_value.hints.push({title: item.title, cipher: make_cipher(item.content, item.price, 1, hint_key)})
+    }
 
     backend_value.decipher_id = frontend_value.content.decipher_id;
 
